@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'GIT_BRANCH_OR_TAG', defaultValue: 'master', description: 'Inserisci il branch o il tag specifico da costruire (es: master, develop, v1.0.0)')
+        string(name: 'GIT_BRANCH_OR_TAG', defaultValue: 'main', description: 'Inserisci il branch o il tag specifico da costruire (es: master, develop, v1.0.0)')
     }
 
     environment {

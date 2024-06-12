@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        LOCAL_REGISTRY_CREDENTIALS = credentials('localRegistryCredentials')
+        LOCAL_REGISTRY_CREDENTIALS = credentials('dockerHubCredentials')
         LOCAL_REGISTRY = 'private.registry.org/flask-app-example'
     }
 

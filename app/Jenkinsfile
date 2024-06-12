@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'GIT_BRANCH_OR_TAG', defaultValue: 'main')
+    }
+
+    environment {
+        LOCAL_REGISTRY_CREDENTIALS = credentials('localRegistryCredentials')
+        LOCAL_REGISTRY = 'private.registry.org/flask-app-example'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    def scmVars = checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: "${params.GIT_BRANCH_OR_TAG}"]], 
+                        doGenerateSubmoduleConfigurations: false, 
+                        extensions: [], 
+                        submoduleCfg: [], 
+                        userRemoteConfigs: [[url: 'your_git_repo_url']]
+                    ])
+                    GIT_COMMIT = scmVars.GIT_COMMIT
+                    GIT_BRANCH = scmVars.GIT_BRANCH ?: params.GIT_BRANCH_OR_TAG
+                    if (GIT_BRANCH == 'main') {
+                        IMAGE_TAG = 'latest'
+                    } else if (GIT_BRANCH == 'develop') {
+                        IMAGE_TAG = "develop-${GIT_COMMIT}"
+                    } else if (scmVars.GIT_TAG != null || params.GIT_BRANCH_OR_TAG.startsWith('v')) {
+                        IMAGE_TAG = params.GIT_BRANCH_OR_TAG
+                    } else {
+                        IMAGE_TAG = "branch-${GIT_BRANCH}-${GIT_COMMIT}"
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${LOCAL_REGISTRY}:${IMAGE_TAG}", "app")
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry("http://private.registry.org", 'LOCAL_REGISTRY_CREDENTIALS') {
+                        docker.image("${LOCAL_REGISTRY}:${IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
+    }
+}

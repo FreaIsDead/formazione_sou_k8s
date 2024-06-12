@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'GIT_BRANCH_OR_TAG', defaultValue: 'main')
+        string(name: 'GIT_BRANCH_OR_TAG', defaultValue: 'master', description: 'Inserisci il branch o il tag specifico da costruire (es: master, develop, v1.0.0)')
     }
 
     environment {
-        LOCAL_REGISTRY_CREDENTIALS = credentials('dockerHubCredentials')
+        LOCAL_REGISTRY_CREDENTIALS = credentials('localRegistryCredentials')
         LOCAL_REGISTRY = 'private.registry.org/flask-app-example'
     }
 
@@ -20,11 +20,11 @@ pipeline {
                         doGenerateSubmoduleConfigurations: false, 
                         extensions: [], 
                         submoduleCfg: [], 
-                        userRemoteConfigs: [[url: 'your_git_repo_url']]
+                        userRemoteConfigs: scm.userRemoteConfigs
                     ])
                     GIT_COMMIT = scmVars.GIT_COMMIT
                     GIT_BRANCH = scmVars.GIT_BRANCH ?: params.GIT_BRANCH_OR_TAG
-                    if (GIT_BRANCH == 'main') {
+                    if (GIT_BRANCH == 'master') {
                         IMAGE_TAG = 'latest'
                     } else if (GIT_BRANCH == 'develop') {
                         IMAGE_TAG = "develop-${GIT_COMMIT}"

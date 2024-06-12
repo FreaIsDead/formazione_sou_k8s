@@ -1,0 +1,20 @@
+# helm install -f values.yml docker-registry --namespace docker-registry twuni/docker-registry
+---
+replicaCount: 1
+persistence:
+  enabled: true
+  size: 5Gi 
+  deleteEnabled: true
+  existingClaim: docker-registry-pv-claim
+secrets:
+  htpasswd: admin:y/fO5NwCsn03AxNK4jLOTrmii.1mjCQ.jTzJDJoCGH0QwkDmuRK
+ingress:
+  enabled: true
+  className: traefik
+  path: /
+  hosts:
+    - private.registry.org   
+  tls:
+    - secretName: docker-registry-tls
+      hosts:
+        - private.registry.org

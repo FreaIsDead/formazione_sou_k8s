@@ -33,6 +33,7 @@ pipeline {
                     } else {
                         IMAGE_TAG = "branch-${GIT_BRANCH}-${GIT_COMMIT}"
                     }
+                    echo "IMAGE_TAG: ${IMAGE_TAG}"
                 }
             }
         }

@@ -39,21 +39,18 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                container('docker'){
-                    sh 'docker build -t "${LOCAL_REGISTRY}:${IMAGE_TAG}" app'
+                script {
+                    docker.build("${LOCAL_REGISTRY}:${IMAGE_TAG}", "app")
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                container('docker') {
-                    sh 'USERNAME=$(awk -F: '{print $1}' $LOCAL_REGISTRY_CREDENTIALS)'
-                    sh 'PASSWORD=$(awk -F: '{print $2}' $LOCAL_REGISTRY_CREDENTIALS)'
-                    sh 'docker login $REGISTRY_URL --username $USERNAME --password $PASSWORD)'
-                    sh 'docker tag $LOCAL_REGISTRY:$IMAGE_TAG $REGISTRY_URL/$LOCAL_REGISTRY:$IMAGE_TAG'
-                    sh 'docker push $REGISTRY_URL/$LOCAL_REGISTRY:$IMAGE_TAG'
-                    sh 'docker logout $REGISTRY_URL'
+                script {
+                    docker.withRegistry("http://private.registry.org", 'LOCAL_REGISTRY_CREDENTIALS') {
+                        docker.image("${LOCAL_REGISTRY}:${IMAGE_TAG}").push()
+                    }
                 }
             }
         }
